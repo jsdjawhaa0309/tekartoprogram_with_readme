@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Цаг Хугацааны Хяналтын Систем</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
+<style>
+  * {margin:0;padding: 0;box-sizing:border-box; }
+  body {background: #000;overflow:hidden;font-family:monospace; }
+  canvas { display: block; }
+  #hint {
+    position:fixed;bottom:18px;left: 50%;transform:translateX(-50%);
+    color:rgba(255,255,255,0.35);font-size:12px;font-family: monospace;
+    letter-spacing:2px;pointer-events:none;z-index: 99;
+    text-transform:uppercase;
+  }
+</style>
+</head>
+<body>
+<div id="hint">SPACE—next era &nbsp;|&nbsp;R —reset</div>
+<script>
+new p5(function(p){
+
+  let currentEra= 0;// 0=odoo uy  1=manjiin uy  2=90eed onii uy
+  let loading=false;
+  let loadPct=0;
+  let nextEra=0;
+  let frameN=0;
+  let codeLines=[];
+  const CODE_SNIPPETS=[
+    'const era=timeline.getCurrentEra();',
+    'if (memory.exists(era)) render(memory.get(era));',
+    'timeline.shift(-376);//→ Manchu',
+    'particles.forEach(p=>p.update());',
+    'ctx.fillStyle=`rgba(0,255,100,${alpha})`;',
+    'for (let i=0;i<history.length; i++) {',
+    '  history[i].render(canvas, time);',
+    '}',
+    'glitch.trigger(Math.random()*0.3);',
+    'system.status="NOMINAL";',
+    'await loadHistoricalMemory(1648);',
+    'const fog=new ParticleSystem(300);',
+    'vhs.scanlines(screen,0.6);',
+    'timeline.shift(+342);//→ 1990s',
+    'crt.flicker(frameCount);',
+    'memory.write(currentEra,snapshot);',
+  ];
+  let manchuParticles=[];
+  let glitchLines=[];
+  p.setup=function() {
+    p.createCanvas(p.windowWidth,p.windowHeight);
+    p.textFont('monospace');
+    initCodeLines();
+    initManchuParticles();
+  };
+  p.windowResized=function(){
+    p.resizeCanvas(p.windowWidth,p.windowHeight);
+    initCodeLines();
+    initManchuParticles();
+  };
+
+  function initCodeLines(){
+    codeLines=[];
+    let lh=22,rows=Math.ceil(p.height/lh)+4;
+    for (let i=0;i<rows;i++) {
+      codeLines.push({
+        text:CODE_SNIPPETS[Math.floor(Math.random()*CODE_SNIPPETS.length)],
+        x:p.random(20,p.width*0.6),
+        y:p.random(-p.height,p.height*2),
+        speed: p.random(0.3,1.2),
+        alpha:p.random(30,160),
+        size: p.random(10,14),
+      });
+    }
+  }
+
+
+  function initManchuParticles() {
+    manchuParticles = [];
+    for (let i=0;i<180;i++) {
+      manchuParticles.push({
+        x:p.random(p.width),
+        y: p.random(p.height),
+        r:p.random(2, 18),
+        vx:p.random(-0.25, 0.25),
+        vy:p.random(-0.18, 0.18),
+        a: p.random(8, 55),
+      });
+    }
+  }
+
+  // zurah heseg
+  p.draw=function() {
+    frameN++;
+    if (loading){ drawLoading();return;}
+
+    if (currentEra===0) drawPresent();
+    else if (currentEra===1) drawManchu();
+    else drawNineties();
+  };
+
+
+  //0dugeer uy buyu odoo uy
+
+  function drawPresent() {
+    p.background(5,8,5);
+
+    //scrolling code
+    p.noStroke();
+    codeLines.forEach(cl => {
+      cl.y+=cl.speed;
+      if (cl.y>p.height+30) {
+        cl.y=-30;
+        cl.text=CODE_SNIPPETS[Math.floor(Math.random()*CODE_SNIPPETS.length)];
+        cl.x=p.random(10,p.width*0.65);
+        cl.alpha=p.random(30,140);
+      }
+      p.fill(0,255,100,cl.alpha);
+      p.textSize(cl.size);
+      p.text(cl.text,cl.x,cl.y);
+    });
+
+  
+
+
+    
+    let g=p.drawingContext;
+    let grad=g.createRadialGradient(
+      p.width/2,p.height/2,p.height*0.05,
+      p.width/2, p.height/2,p.height*0.72
+    );
+    grad.addColorStop(0,'rgba(5,8,5,0.78)');
+    grad.addColorStop(1,'rgba(5,8,5,0.0)');
+    g.fillStyle = grad;
+    g.fillRect(0,0,p.width, p.height);
+
+    // deed bar
+    p.noStroke();
+    p.fill(0,255,100,18);
+    p.rect(0,0,p.width,48);
+    p.fill(0,255,100,200);
+    p.textSize(11);
+    p.textAlign(p.LEFT,p.CENTER);
+    p.text('◉  SYS:ONLINE   ERA_INDEX:00   MEM:OK   SYNC:ACTIVE', 24, 24);
+    p.textAlign(p.RIGHT,p.CENTER);
+    p.text('[ TIME_CTRL v3.0 ]', p.width-24, 24);
+
+    // goliin content
+    p.textAlign(p.CENTER,p.CENTER);
+
+    // big label
+    p.fill(0,255,100,30);
+    p.textSize(p.width*0.18);
+    p.text('2026',p.width/2,p.height/2-30);
+
+    p.fill(0,255,100,240);
+    p.textSize(13);
+    let dot=(frameN%60<30) ? '█' : ' ';
+    p.text('YEAR:2026'+dot,p.width/2,p.height/2+70);
+
+    p.fill(0,255,100,140);
+    p.textSize(11);
+    p.text('CURRENT ERA — PRESENT',p.width/2,p.height/2+95);
+
+    // scanline shimmer
+    drawScanlines(0,255,100,6);
+  }
+
+ 
+  // manjiin uy
+  function drawManchu() {
+    // Sky gradient
+    let g = p.drawingContext;
+    let sky = g.createLinearGradient(0, 0, 0, p.height);
+    sky.addColorStop(0,'#0a1a3a');
+    sky.addColorStop(0.45,'#1a3a6a');
+    sky.addColorStop(0.72,'#c8824a');
+    sky.addColorStop(1,'#3a1a0a');
+    g.fillStyle=sky;
+    g.fillRect(0,0,p.width,p.height);
+
+    // Stars
+    p.noStroke();
+    let seed=42;
+    for (let i=0;i<90;i++) {
+      seed=(seed*1664525+1013904223)&0xffffffff;
+      let sx=((seed>>>0)/0xffffffff)*p.width;
+      seed=(seed*1664525+1013904223)&0xffffffff;
+      let sy=((seed>>>0)/0xffffffff)*p.height*0.55;
+      let tw=0.4+0.6*Math.abs(Math.sin(frameN*0.015+i));
+      p.fill(255,240,200,180*tw);
+      p.ellipse(sx,sy,2,2);
+    }
+
+    // tolgoduud
+    p.noStroke();
+    p.fill(15,35,15,200);
+    g.beginPath();
+    g.moveTo(0,p.height);
+    for (let x=0;x<=p.width;x+=12) {
+      let h=p.height*0.68
+            + Math.sin(x*0.006+1.2)*38
+            + Math.sin(x*0.013+2.4)*18;
+      if (x===0) g.moveTo(x,h); else g.lineTo(x,h);
+    }
+    g.lineTo(p.width,p.height);g.lineTo(0,p.height); g.closePath();
+    g.fillStyle='rgba(10,28,12,0.95)';g.fill();
+
+
+
+
+    p.fill(8,22,8,230);
+    p.rect(0,p.height*0.82,p.width,p.height*0.18);
+
+  
+
+
+    manchuParticles.forEach(mp => {
+      mp.x+=mp.vx+Math.sin(frameN*0.008+mp.y*0.01)*0.1;
+      mp.y+=mp.vy+Math.cos(frameN*0.006+mp.x*0.01)*0.05;
+      if (mp.x<-60)mp.x=p.width+60;
+      if (mp.x>p.width+60) mp.x=-60;
+      if (mp.y<p.height*0.5)  mp.y=p.height*0.5+p.random(10);
+      if (mp.y>p.height+20)mp.y=p.height*0.5;
+      p.fill(180,210,255,mp.a);
+      p.noStroke();
+      p.ellipse(mp.x,mp.y,mp.r*2,mp.r);
+    });
+
+
+    let moonY=p.height*0.18+Math.sin(frameN*0.005)*4;
+    p.fill(255,245,200,220);
+    p.noStroke();
+    p.ellipse(p.width*0.78,moonY,46,46);
+    p.fill(10,26,58,200);
+    p.ellipse(p.width*0.78-10,moonY-6,36,36);
+
+
+    
+    p.noStroke();
+    p.fill(10,20,50,180);
+    p.rect(0,0,p.width,48);
+    p.fill(200,180,120,200);
+    p.textSize(11);
+    p.textAlign(p.LEFT,p.CENTER);
+    p.text('◈  ERA_INDEX:01   TIMESTAMP:1648–1912   MEM:READ',24,24);
+    p.textAlign(p.RIGHT,p.CENTER);
+    p.text('[ МАНЖИЙН ҮЕ ]',p.width-24,24);
+
+
+    
+    p.textAlign(p.CENTER, p.CENTER);
+    p.fill(220,190,130,22);
+    p.textSize(p.width*0.14);
+    p.text('МАНЖ',p.width/2,p.height/2-10);
+
+    p.fill(220,200,150,240);
+    p.textSize(14);
+    p.text('МАНЖИЙН ҮЕ — 1648–1912',p.width/2,p.height*0.72);
+    p.fill(200,180,130,150);
+    p.textSize(11);
+    p.text('HISTORICAL MEMORY LOADED',p.width/2,p.height*0.72+22);
+  }
+
+ // 90eed on
+  function drawNineties() {
+
+    p.background(10,5,18);
+
+    p.loadPixels && null; 
+    p.noStroke();
+    for (let i=0;i<120;i++) {
+      let nx=p.random(p.width),ny=p.random(p.height);
+      let nw=p.random(1,p.width*0.4),nh=p.random(1, 4);
+      p.fill(p.random(100,255),p.random(50,180),p.random(150,255),p.random(4,18));
+      p.rect(nx,ny,nw,nh);
+    }
+
+    drawScanlines(180,120,255,10);
+
+
+
+    if (frameN%7<3){
+      let gy=p.random(p.height),gh=p.random(4,40);
+      let gshift=p.random(-40,40);
+      p.fill(200,50,255,80);
+      p.rect(0,gy,p.width,gh);
+      p.fill(50,255,200,60);
+      p.rect(gshift,gy+2,p.width,gh*0.5);
+    }
+
+ 
+
+
+    for (let i=0;i<4;i++) {
+      if (p.random()<0.3) {
+        let ly=p.random(p.height);
+        p.stroke(255,50,p.random(100,255),p.random(60,160));
+        p.strokeWeight(p.random(0.5,2));
+        p.line(p.random(p.width*0.1), ly,p.random(p.width*0.9,p.width),ly);
+      }
+    }
+    p.noStroke();
+
+  
+
+    let cx=p.width/2,cy=p.height/2;
+    p.textAlign(p.CENTER,p.CENTER);
+
+
+    let gx=(frameN%11<4)? p.random(-6,6):0;
+    p.fill(255,50,150,30);
+    p.textSize(p.width*0.18);
+    p.text('1990s',cx+gx+3,cy-20+2);
+    p.fill(50,200,255,30);
+    p.text('1990s',cx+gx -3,cy -20-2);
+    p.fill(230, 200, 255, 160);
+    p.text('1990s',cx+ gx,cy-20);
+
+
+    
+    p.fill(20,10,40,200 );
+    p.rect(0,0,p.width,48);
+    p.fill(220,180,255,200);
+    p.textSize(11);
+    p.textAlign(p.LEFT,p.CENTER);
+    let rec  =(frameN%50<25) ? '● REC' : '  REC';
+    p.text(rec+'   ERA_INDEX:02   TIMESTAMP:1990–1999   MEM:CORRUPTED',24,24);
+    p.textAlign(p.RIGHT,p.CENTER);
+    p.text('[ 1990-ААД ОН ]',p.width-24,24);
+
+
+
+    p.fill(180,100,255,40);
+    p.rect(0,48,p.width,p.random(3,8));
+
+
+
+    p.textAlign(p.CENTER,p.CENTER);
+    p.fill(220,180,255,240);
+    p.textSize(14);
+    let flick=(frameN%8<6) ? '1990-ААД ОН — НИЙГМИЙН ШИЛЖИЛТ' : '█████-ААД ██ — ██████████ ██████';
+    p.text(flick,cx,p.height*0.72);
+    p.fill(180,140,220,150);
+    p.textSize(11);
+    p.text('VHS_SIGNAL :: UNSTABLE',cx,p.height*0.72+22);
+  }
+
+ 
+  //load 
+  function drawLoading() {
+ 
+
+    p.background(0,0,0,230);
+    if (Math.random()<0.4) {
+      p.fill(p.random(255),p.random(100),p.random(255),15);
+      p.rect(0,p.random(p.height),p.width,p.random(2,10));
+    }
+
+    loadPct+=p.random(0.6, 2.2);
+    if (loadPct>=100) {
+      loadPct= 0;
+      currentEra=nextEra;
+      loading  =false;
+      return;
+    }
+
+    let cx=p.width/2,cy=p.height / 2;
+    p.textAlign(p.CENTER,p.CENTER);
+
+
+
+    p.fill(0,255,150,230);
+    p.textSize(13);
+    p.text('LOADING HISTORICAL MEMORY…',cx,cy-50);
+
+   
+    let names=['PRESENT 2026','МАНЖИЙН ҮЕ 1648','1990-AAD ON'];
+    p.fill(200,200,200,160);
+    p.textSize(11);
+    p.text('→  '+names[nextEra],cx,cy-28);
+
+
+    let bw=Math.min(400,p.width*0.55),bh=6;
+    let bx=cx-bw/2,by=cy;
+    p.fill(30, 30, 30);
+    p.noStroke();
+    p.rect(bx,by, bw,bh,3);
+
+ 
+    
+    let cols= [
+      [0,255,100],
+      [220,190,130],
+      [200,100,255],
+    ];
+    let [r,g2,b2]=cols[nextEra];
+    p.fill(r,g2,b2,230);
+    p.rect(bx,by,bw*(loadPct/100),bh,3);
+
+
+
+    p.fill(r,g2,b2,200);
+    p.textSize(12);
+    p.text(Math.floor(loadPct)+'%',cx,by+24);
+
+
+
+    for (let i=0;i<3;i++) {
+      if (Math.random()<0.25) {
+        p.stroke(r,g2,b2,80);
+        p.strokeWeight(1);
+        let ly=p.random(p.height);
+        p.line(0,ly,p.width*Math.random(),ly);
+        p.noStroke();
+      }
+    }
+    p.noStroke();
+
+
+
+    p.fill(100,100,100,150);
+    p.textSize(10);
+    p.text('TIME NAVIGATION SYSTEM', cx, cy + 55);
+  }
+
+
+  function drawScanlines(r,g2,b2, alpha) {
+    p.noStroke();
+    for (let y=0; y<p.height;y+= 4) {
+      p.fill(r,g2,b2,alpha);
+      p.rect(0,y,p.width,  1);
+    }
+  }
+
+  // keyboard
+  p.keyPressed=function() {
+    if(loading)return;
+
+    if(p.key===' ') {
+      nextEra=(currentEra+1)%3;
+      loading=true;
+      loadPct =0;
+    }
+    if (p.key=== 'r'||p.key==='R') {
+      nextEra=0;
+      loading =true;
+      loadPct=0;
+    }
+  };
+
+});
+</script>
+</body>
+</html>
