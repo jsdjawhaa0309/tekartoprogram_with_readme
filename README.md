@@ -20,5 +20,5 @@ Simple code for Tekarto by NMCTs student
 
 ## Authors
 
-ex. @jsdjawhaa0309 for README.md
-ex. @lveyuzu for the program
+@jsdjawhaa0309 for README.md
+@lveyuzu for the program
