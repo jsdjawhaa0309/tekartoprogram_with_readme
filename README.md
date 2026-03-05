@@ -11,15 +11,12 @@ Simple code for Tekarto by NMCTs student
 ### Installing
 
 * Click on the triangle next to lime "Code" button
-* Click download zip
+* Click Download ZIP
+* Extract the downloaded zip!
 
 ### Executing program
 
-* How to run the program
-* Step-by-step bullets
-```
-code blocks for commands
-```
+* Just run it inside the browser!
 
 ## Help
 
